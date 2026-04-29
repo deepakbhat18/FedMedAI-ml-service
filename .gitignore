@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+*.so
+*.egg
+*.egg-info/
+
+# Virtual Environment
+venv/
+env/
+.venv/
+
+# Environment secrets
+.env
+
+# ML Models (large files)
+storage/
+storage/models/
+*.joblib
+*.pkl
+*.pickle
+
+# Data files (large)
+data/raw/*.csv
+data/hospital_1/
+data/hospital_2/
+data/hospital_3/
+
+# Training history
+training_history.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# IDE
+.idea/
+.vscode/
+*.swp
