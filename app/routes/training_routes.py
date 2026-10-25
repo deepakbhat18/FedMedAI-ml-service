@@ -1,5 +1,4 @@
 
-
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List, Dict, Optional
@@ -8,7 +7,6 @@ from app.flower.flower_server import flower_server
 from app.federated.differential_privacy import DifferentialPrivacy
 
 router = APIRouter()
-
 
 class TrainRequest(BaseModel):
     hospital_id: int
@@ -20,7 +18,6 @@ class TrainRequest(BaseModel):
     global_weights: Optional[Dict] = None
     dp_epsilon: Optional[float] = None
 
-
 class TrainAllRequest(BaseModel):
     hospital_ids: List[int] = [1, 2, 3]
     epochs: int = 5
@@ -30,11 +27,9 @@ class TrainAllRequest(BaseModel):
     num_rounds: int = 3
     dp_epsilon: Optional[float] = None
 
-
 class AggregateRequest(BaseModel):
     hospital_weights: List[Dict]
     aggregation_method: str = "fedavg"
-
 
 @router.post("/train")
 async def train_local(request: TrainRequest):
@@ -94,7 +89,6 @@ async def train_local(request: TrainRequest):
         raise HTTPException(status_code=500,
             detail=f"Training failed for hospital {request.hospital_id}: {str(e)}")
 
-
 @router.post("/train/all")
 async def train_all_hospitals(request: TrainAllRequest):
     """
@@ -122,7 +116,6 @@ async def train_all_hospitals(request: TrainAllRequest):
                 dp_epsilon=request.dp_epsilon
             )
 
-        # Add DP info to response
         if dp_info:
             result["differential_privacy"] = dp_info
 
@@ -131,7 +124,6 @@ async def train_all_hospitals(request: TrainAllRequest):
     except Exception as e:
         raise HTTPException(status_code=500,
             detail=f"Federated learning round failed: {str(e)}")
-
 
 @router.post("/aggregate")
 async def aggregate_weights(request: AggregateRequest):
@@ -152,11 +144,16 @@ async def aggregate_weights(request: AggregateRequest):
         raise HTTPException(status_code=500,
             detail=f"Aggregation failed: {str(e)}")
 
-
 @router.get("/training/engines")
 async def get_available_engines():
     """Get available FL training engines."""
-    import flwr
+    flower_ver = "unknown"
+    try:
+        import flwr
+        flower_ver = flwr.__version__
+    except Exception:
+        pass
+    flower_desc = f"Flower FL framework v{flower_ver}" if flower_ver != "unknown" else "Flower FL framework (simulation)"
     return {
         "engines": [
             {
@@ -168,8 +165,8 @@ async def get_available_engines():
             {
                 "id": "flower",
                 "name": "Flower Framework",
-                "description": f"Flower FL framework v{flwr.__version__}",
-                "version": flwr.__version__,
+                "description": flower_desc,
+                "version": flower_ver,
                 "status": "available"
             }
         ],
@@ -178,7 +175,6 @@ async def get_available_engines():
             "description": "Add dp_epsilon parameter (0.1 to 10.0) to enable"
         }
     }
-
 
 @router.get("/privacy/info")
 async def get_privacy_info():

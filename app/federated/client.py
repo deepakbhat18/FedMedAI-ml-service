@@ -7,7 +7,6 @@ from app.data.preprocessor import preprocessor
 from app.utils.metrics import calculate_metrics
 from config import DISEASE_TYPES
 
-
 class HospitalClient:
     """
     Simulates a hospital's local training process.
@@ -106,10 +105,8 @@ class HospitalClient:
                 self.local_models[disease_type] = model
                 self.local_scalers[disease_type] = scaler
 
-                # Extract ONLY weights (not data!)
                 weights = model.get_weights()
 
-                # Apply Differential Privacy if enabled
                 if dp_epsilon is not None and dp_epsilon > 0:
                     from app.federated.differential_privacy import DifferentialPrivacy
                     dp_module = DifferentialPrivacy(epsilon=dp_epsilon)
@@ -178,7 +175,6 @@ class HospitalClient:
 
         weights = model.get_weights()
 
-        # Apply DP if enabled
         if dp_epsilon is not None and dp_epsilon > 0:
             from app.federated.differential_privacy import DifferentialPrivacy
             dp_module = DifferentialPrivacy(epsilon=dp_epsilon)

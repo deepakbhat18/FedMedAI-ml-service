@@ -1,7 +1,6 @@
 import numpy as np
 from typing import Dict, List
 
-
 class DifferentialPrivacy:
     """
     Differential Privacy for Federated Learning.
@@ -40,7 +39,6 @@ class DifferentialPrivacy:
         """
         noisy_weights = {}
 
-        # Add noise to coefficients
         if "coefficients" in weights:
             coef = np.array(weights["coefficients"])
             sensitivity = self._calculate_sensitivity(coef)
@@ -49,7 +47,6 @@ class DifferentialPrivacy:
             noisy_coef = coef + noise
             noisy_weights["coefficients"] = noisy_coef.tolist()
         
-        # Add noise to intercept
         if "intercept" in weights:
             intercept = np.array(weights["intercept"])
             sensitivity = self._calculate_sensitivity(intercept)
@@ -58,7 +55,6 @@ class DifferentialPrivacy:
             noisy_intercept = intercept + noise
             noisy_weights["intercept"] = noisy_intercept.tolist()
 
-        # Copy other fields
         for key in weights:
             if key not in noisy_weights:
                 noisy_weights[key] = weights[key]
@@ -81,7 +77,6 @@ class DifferentialPrivacy:
             noisy_weights = self.add_noise_to_weights(weights)
             noisy_disease_weights[disease_type] = noisy_weights
             
-            # Log noise impact
             if "coefficients" in weights and "coefficients" in noisy_weights:
                 original = np.array(weights["coefficients"])
                 noisy = np.array(noisy_weights["coefficients"])
@@ -99,9 +94,7 @@ class DifferentialPrivacy:
         
         For logistic regression weights, we use L2 sensitivity.
         """
-        # Use standard deviation as proxy for sensitivity
         sensitivity = float(np.std(array)) if np.std(array) > 0 else 1.0
-        # Clip to reasonable range
         return min(max(sensitivity, 0.001), 10.0)
 
     def get_privacy_report(self) -> Dict:
@@ -130,6 +123,4 @@ class DifferentialPrivacy:
                           f"Lower epsilon = more privacy but less accuracy."
         }
 
-
-# Default instance
 dp = DifferentialPrivacy(epsilon=1.0)

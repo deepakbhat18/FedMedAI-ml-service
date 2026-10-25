@@ -14,8 +14,6 @@ from reportlab.platypus import (
 )
 from reportlab.platypus.flowables import HRFlowable
 
-
-# ─── Color Palette ───────────────────────────────────────
 DARK_BG      = colors.HexColor('#0d1117')
 CARD_BG      = colors.HexColor('#161b22')
 BORDER       = colors.HexColor('#30363d')
@@ -42,7 +40,6 @@ URGENCY_COLORS = {
     'WITHIN_1_MONTH':  colors.HexColor('#3b7eff'),
     'ROUTINE':         colors.HexColor('#00d68f'),
 }
-
 
 class MedicalPDFGenerator:
     """
@@ -148,7 +145,6 @@ class MedicalPDFGenerator:
 
         story = []
 
-        # Build sections
         story += self._build_header(hospital_data, patient_data)
         story += self._build_patient_info(patient_data, features)
         story += self._build_predictions(predictions)
@@ -159,7 +155,6 @@ class MedicalPDFGenerator:
         story += self._build_vitals_table(features)
         story += self._build_footer(patient_data, hospital_data)
 
-        # Build PDF with dark background
         doc.build(
             story,
             onFirstPage=self._draw_background,
@@ -168,7 +163,6 @@ class MedicalPDFGenerator:
 
         return buffer.getvalue()
 
-    # ─── Background ─────────────────────────────────────────
     def _draw_background(self, canvas, doc):
         """Draw dark background on every page."""
         canvas.saveState()
@@ -176,13 +170,11 @@ class MedicalPDFGenerator:
         canvas.rect(0, 0, A4[0], A4[1], fill=1, stroke=0)
         canvas.restoreState()
 
-    # ─── Header ─────────────────────────────────────────────
     def _build_header(self, hospital: Optional[Dict], patient: Dict) -> list:
         story = []
 
         hosp_name = hospital.get('name', 'FL Medical Center') if hospital else 'FL Medical Center'
 
-        # Top gradient bar (simulated with colored table)
         bar_data = [['']]
         bar_table = Table(bar_data, colWidths=[174*mm], rowHeights=[4])
         bar_table.setStyle(TableStyle([
@@ -192,7 +184,6 @@ class MedicalPDFGenerator:
         story.append(bar_table)
         story.append(Spacer(1, 8*mm))
 
-        # Hospital name
         story.append(Paragraph(f'🏥 {hosp_name}', self.style_title))
         story.append(Paragraph(
             'Federated Learning · AI Medical Diagnosis Report',
@@ -200,7 +191,6 @@ class MedicalPDFGenerator:
         ))
         story.append(Spacer(1, 2*mm))
 
-        # Report metadata bar
         report_date = datetime.now().strftime('%B %d, %Y  %H:%M')
         report_id   = f"RPT-{datetime.now().strftime('%Y%m%d%H%M%S')}"
         meta_data = [[
@@ -226,7 +216,6 @@ class MedicalPDFGenerator:
         story.append(Spacer(1, 6*mm))
         return story
 
-    # ─── Patient Info ────────────────────────────────────────
     def _build_patient_info(self, patient: Dict, features: Optional[Dict]) -> list:
         story = []
         story.append(Paragraph('PATIENT INFORMATION', self.style_section))
@@ -272,7 +261,6 @@ class MedicalPDFGenerator:
         story.append(Spacer(1, 5*mm))
         return story
 
-    # ─── Predictions ─────────────────────────────────────────
     def _build_predictions(self, predictions: List[Dict]) -> list:
         story = []
         story.append(Paragraph('AI DISEASE RISK ASSESSMENT', self.style_section))
@@ -285,7 +273,6 @@ class MedicalPDFGenerator:
             'stroke':         '●',
         }
 
-        # Header row
         header = [
             Paragraph('DISEASE', ParagraphStyle('h', parent=self.styles['Normal'],
                 fontSize=8, textColor=TEXT_GRAY, fontName='Helvetica-Bold')),
@@ -310,7 +297,6 @@ class MedicalPDFGenerator:
             label     = pred.get('prediction_label', 'Unknown')
             healthy   = f"{(1 - conf) * 100:.1f}%"
 
-            # Progress bar (text-based)
             bar_filled = int(conf * 20)
             bar = '█' * bar_filled + '░' * (20 - bar_filled)
 
@@ -338,17 +324,14 @@ class MedicalPDFGenerator:
 
         t = Table(rows, colWidths=[47*mm, 28*mm, 24*mm, 38*mm, 37*mm])
         t.setStyle(TableStyle([
-            # Header
             ('BACKGROUND',    (0, 0), (-1, 0), colors.HexColor('#1c2128')),
             ('TOPPADDING',    (0, 0), (-1, 0), 8),
             ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
-            # Body rows
             ('BACKGROUND',    (0, 1), (-1, -1), CARD_BG),
             ('ROWBACKGROUNDS', (0, 1), (-1, -1),
              [CARD_BG, colors.HexColor('#1a1f2a')]),
             ('TOPPADDING',    (0, 1), (-1, -1), 9),
             ('BOTTOMPADDING', (0, 1), (-1, -1), 9),
-            # All
             ('LEFTPADDING',   (0, 0), (-1, -1), 10),
             ('RIGHTPADDING',  (0, 0), (-1, -1), 10),
             ('BOX',           (0, 0), (-1, -1), 0.5, BORDER),
@@ -359,12 +342,10 @@ class MedicalPDFGenerator:
         story.append(Spacer(1, 5*mm))
         return story
 
-    # ─── Recommendations ─────────────────────────────────────
     def _build_recommendations(self, recommendations: Dict) -> list:
         story = []
         story.append(Paragraph('MEDICAL RECOMMENDATIONS', self.style_section))
 
-        # Overall summary
         summary = recommendations.get('overall_summary', '')
         if summary:
             sum_data = [[Paragraph(summary, self.style_body)]]
@@ -380,7 +361,6 @@ class MedicalPDFGenerator:
             story.append(sum_table)
             story.append(Spacer(1, 4*mm))
 
-        # Priority + Follow-up
         priority = recommendations.get('most_urgent', '')
         followup = recommendations.get('follow_up_timeline', '')
         if priority or followup:
@@ -406,14 +386,12 @@ class MedicalPDFGenerator:
             story.append(pf_table)
             story.append(Spacer(1, 4*mm))
 
-        # Per-disease recommendations
         for rec in recommendations.get('disease_recommendations', []):
             story.append(KeepTogether(
                 self._build_single_recommendation(rec)
             ))
             story.append(Spacer(1, 3*mm))
 
-        # General advice
         advice = recommendations.get('general_advice', [])
         if advice:
             story.append(Paragraph('General Health Advice', ParagraphStyle(
@@ -426,7 +404,6 @@ class MedicalPDFGenerator:
                 for a in advice[i:i+2]
             ] for i in range(0, len(advice), 2)]
 
-            # Pad last row if odd
             if advice_rows and len(advice_rows[-1]) == 1:
                 advice_rows[-1].append(Paragraph('', self.style_small))
 
@@ -457,7 +434,6 @@ class MedicalPDFGenerator:
         conf      = rec.get('confidence', 0)
         urgency_label = urgency.replace('_', ' ')
 
-        # Disease header row
         header_data = [[
             Paragraph(
                 f'<font color="#{risk_col.hexval()[2:]}">{disease}</font>',
@@ -489,7 +465,6 @@ class MedicalPDFGenerator:
         ]))
         items.append(header_t)
 
-        # Explanation
         explanation = rec.get('explanation', '')
         if explanation:
             exp_data = [[Paragraph(f'💡  {explanation}', self.style_small)]]
@@ -503,7 +478,6 @@ class MedicalPDFGenerator:
             ]))
             items.append(exp_t)
 
-        # Tests / Specialists / Lifestyle - 3 columns
         tests     = rec.get('tests_recommended', [])[:5]
         specs     = rec.get('specialists_to_consult', [])
         lifestyle = rec.get('lifestyle_changes', [])[:4]
@@ -550,7 +524,6 @@ class MedicalPDFGenerator:
         items.append(body_t)
         return items
 
-    # ─── Vitals Table ────────────────────────────────────────
     def _build_vitals_table(self, features: Optional[Dict]) -> list:
         if not features:
             return []
@@ -628,7 +601,6 @@ class MedicalPDFGenerator:
                 ),
             ])
 
-        # Boolean fields
         for key, label in [
             ('smoking', 'Smoking'), ('diabetesHistory', 'Diabetes History'),
             ('familyHistory', 'Family History'),
@@ -673,11 +645,9 @@ class MedicalPDFGenerator:
         story.append(Spacer(1, 5*mm))
         return story
 
-    # ─── Footer ─────────────────────────────────────────────
     def _build_footer(self, patient: Dict, hospital: Optional[Dict]) -> list:
         story = []
 
-        # Doctor signature area
         sig_data = [[
             Paragraph('Attending Doctor', ParagraphStyle('sl', parent=self.styles['Normal'],
                 fontSize=8, textColor=TEXT_GRAY, fontName='Helvetica')),
@@ -706,7 +676,6 @@ class MedicalPDFGenerator:
         story.append(sig_t)
         story.append(Spacer(1, 5*mm))
 
-        # Bottom bar
         bar_data = [['']]
         bar_t = Table(bar_data, colWidths=[174*mm], rowHeights=[2])
         bar_t.setStyle(TableStyle([
@@ -715,7 +684,6 @@ class MedicalPDFGenerator:
         story.append(bar_t)
         story.append(Spacer(1, 3*mm))
 
-        # Disclaimer
         story.append(Paragraph(
             '⚕️  This report is generated by an AI-powered Federated Learning system and is intended '
             'to assist medical professionals. It does NOT replace professional medical advice, '
@@ -729,6 +697,4 @@ class MedicalPDFGenerator:
         ))
         return story
 
-
-# Global instance
 pdf_generator = MedicalPDFGenerator()

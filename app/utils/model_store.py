@@ -5,7 +5,6 @@ import numpy as np
 from datetime import datetime
 from config import MODEL_STORAGE_DIR
 
-
 def save_model(model, scaler, disease_type, version, metrics=None):
     """
     Save trained model and scaler to disk.
@@ -17,19 +16,15 @@ def save_model(model, scaler, disease_type, version, metrics=None):
         version: e.g., 'v1.0'
         metrics: Dictionary of training metrics
     """
-    # Create disease-specific directory
     disease_dir = os.path.join(MODEL_STORAGE_DIR, disease_type)
     os.makedirs(disease_dir, exist_ok=True)
 
-    # Save model
     model_path = os.path.join(disease_dir, f"model_{version}.joblib")
     joblib.dump(model, model_path)
 
-    # Save scaler
     scaler_path = os.path.join(disease_dir, f"scaler_{version}.joblib")
     joblib.dump(scaler, scaler_path)
 
-    # Save metadata
     metadata = {
         "disease_type": disease_type,
         "version": version,
@@ -44,12 +39,10 @@ def save_model(model, scaler, disease_type, version, metrics=None):
     with open(metadata_path, "w") as f:
         json.dump(metadata, f, indent=2)
 
-    # Also save as "latest" for easy access
     joblib.dump(model, os.path.join(disease_dir, "model_latest.joblib"))
     joblib.dump(scaler, os.path.join(disease_dir, "scaler_latest.joblib"))
 
     return model_path
-
 
 def load_model(disease_type, version=None):
     """
@@ -79,13 +72,11 @@ def load_model(disease_type, version=None):
 
     return model, scaler
 
-
 def model_exists(disease_type):
     """Check if a model exists for given disease type."""
     disease_dir = os.path.join(MODEL_STORAGE_DIR, disease_type)
     model_path = os.path.join(disease_dir, "model_latest.joblib")
     return os.path.exists(model_path)
-
 
 def get_model_weights(disease_type, version=None):
     """
@@ -110,7 +101,6 @@ def get_model_weights(disease_type, version=None):
 
     return weights
 
-
 def set_model_weights(model, weights):
     """
     Set model weights from FL aggregation.
@@ -126,7 +116,6 @@ def set_model_weights(model, weights):
     model.intercept_ = np.array(weights["intercept"])
     return model
 
-
 def get_all_model_status():
     """Get status of all disease models."""
     from config import DISEASE_TYPES, DISEASE_DISPLAY_NAMES
@@ -139,12 +128,10 @@ def get_all_model_status():
 
         if os.path.exists(model_path):
             metadata = {}
-            # Try loading latest versioned metadata
             if os.path.exists(metadata_path):
                 with open(metadata_path, "r") as f:
                     metadata = json.load(f)
 
-            # Find latest version metadata
             latest_metadata = None
             if os.path.exists(disease_dir):
                 for file in sorted(os.listdir(disease_dir)):

@@ -1,6 +1,5 @@
 from app.models.base_model import BaseDiseaseModel
 
-
 class HeartDiseaseModel(BaseDiseaseModel):
     """
     Heart Disease Prediction Model
@@ -16,7 +15,6 @@ class HeartDiseaseModel(BaseDiseaseModel):
             "restecg", "thalach", "exang", "oldpeak", "slope", "ca", "thal"
         ]
 
-
 class DiabetesModel(BaseDiseaseModel):
     """
     Diabetes Prediction Model
@@ -31,7 +29,6 @@ class DiabetesModel(BaseDiseaseModel):
             "Pregnancies", "Glucose", "BloodPressure", "SkinThickness",
             "Insulin", "BMI", "DiabetesPedigreeFunction", "Age"
         ]
-
 
 class KidneyDiseaseModel(BaseDiseaseModel):
     """
@@ -54,7 +51,6 @@ class KidneyDiseaseModel(BaseDiseaseModel):
             "hypertension", "diabetes_mellitus", "appetite", "anemia"
         ]
 
-
 class LiverDiseaseModel(BaseDiseaseModel):
     """
     Liver Disease Prediction Model
@@ -74,7 +70,6 @@ class LiverDiseaseModel(BaseDiseaseModel):
             "Albumin", "Albumin_and_Globulin_Ratio"
         ]
 
-
 class StrokeModel(BaseDiseaseModel):
     """
     Stroke Prediction Model
@@ -92,9 +87,6 @@ class StrokeModel(BaseDiseaseModel):
             "avg_glucose_level", "bmi", "smoking_status"
         ]
 
-
-# ==================== MODEL REGISTRY ====================
-# Single place to get any disease model
 MODEL_REGISTRY = {
     "heart_disease": HeartDiseaseModel,
     "diabetes": DiabetesModel,
@@ -102,7 +94,6 @@ MODEL_REGISTRY = {
     "liver_disease": LiverDiseaseModel,
     "stroke": StrokeModel,
 }
-
 
 def get_model(disease_type):
     """
@@ -120,7 +111,6 @@ def get_model(disease_type):
             f"Available: {list(MODEL_REGISTRY.keys())}"
         )
     return MODEL_REGISTRY[disease_type]()
-
 
 def get_all_models():
     """Get instances of all disease models."""

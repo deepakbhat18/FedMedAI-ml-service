@@ -1,0 +1,28 @@
+{
+  "disease_type": "heart_disease",
+  "version": "v4.0",
+  "model_type": "LogisticRegression",
+  "saved_at": "2026-04-17T13:42:56.738552",
+  "model_path": "/home/deepak/ml-service/storage/models/heart_disease/model_v4.0.joblib",
+  "scaler_path": "/home/deepak/ml-service/storage/models/heart_disease/scaler_v4.0.joblib",
+  "metrics": {
+    "accuracy": 0.8383,
+    "precision": 0.8222,
+    "recall": 0.897,
+    "f1_score": 0.858,
+    "loss": 0.3619,
+    "confusion_matrix": [
+      [
+        106,
+        32
+      ],
+      [
+        17,
+        148
+      ]
+    ],
+    "total_samples": 303,
+    "positive_count": 165,
+    "negative_count": 138
+  }
+}

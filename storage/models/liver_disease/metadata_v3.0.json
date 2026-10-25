@@ -1,0 +1,28 @@
+{
+  "disease_type": "liver_disease",
+  "version": "v3.0",
+  "model_type": "LogisticRegression",
+  "saved_at": "2026-04-17T13:41:01.091838",
+  "model_path": "/home/deepak/ml-service/storage/models/liver_disease/model_v3.0.joblib",
+  "scaler_path": "/home/deepak/ml-service/storage/models/liver_disease/scaler_v3.0.joblib",
+  "metrics": {
+    "accuracy": 0.7236,
+    "precision": 0.7835,
+    "recall": 0.6178,
+    "f1_score": 0.6909,
+    "loss": 0.5445,
+    "confusion_matrix": [
+      [
+        345,
+        71
+      ],
+      [
+        159,
+        257
+      ]
+    ],
+    "total_samples": 832,
+    "positive_count": 416,
+    "negative_count": 416
+  }
+}

@@ -3,7 +3,6 @@ import pandas as pd
 import os
 from config import RAW_DATA_DIR
 
-
 def generate_kidney_dataset(n_samples=500):
     """
     Generate realistic chronic kidney disease dataset.
@@ -30,7 +29,6 @@ def generate_kidney_dataset(n_samples=500):
     appetite = np.random.randint(0, 2, n_samples)
     anemia = np.random.randint(0, 2, n_samples)
 
-    # Generate realistic target based on risk factors
     risk_score = (
         (blood_pressure > 140).astype(float) * 0.15 +
         (albumin > 2).astype(float) * 0.2 +
@@ -65,7 +63,6 @@ def generate_kidney_dataset(n_samples=500):
         "classification": target
     })
 
-    # Save to raw directory
     output_path = os.path.join(RAW_DATA_DIR, "kidney_disease.csv")
     df.to_csv(output_path, index=False)
     print(f"Kidney dataset generated: {len(df)} rows")
@@ -74,7 +71,6 @@ def generate_kidney_dataset(n_samples=500):
     print(f"Saved to: {output_path}")
 
     return df
-
 
 if __name__ == "__main__":
     generate_kidney_dataset()

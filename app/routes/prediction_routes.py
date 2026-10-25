@@ -12,9 +12,6 @@ from datetime import datetime
 
 router = APIRouter()
 
-
-# ==================== REQUEST/RESPONSE MODELS ====================
-
 class PredictRequest(BaseModel):
     features: List[float]
     disease_type: Optional[str] = None 
@@ -41,10 +38,6 @@ class PredictSingleRequest(BaseModel):
 class PredictFromDBRequest(BaseModel):
     """Request format from Spring Boot"""
     features: List[float]
-
-
-# ==================== FEATURE MAPPING ====================
-
 
 DISEASE_FEATURE_MAP = {
     "heart_disease": {
@@ -80,7 +73,6 @@ DISEASE_FEATURE_MAP = {
     }
 }
 
-# General input form → mapped to each disease's features
 GENERAL_INPUT_FIELDS = [
     "age", "gender", "blood_pressure", "cholesterol", "heart_rate",
     "glucose", "bmi", "smoking", "diabetes_history", "family_history",
@@ -88,13 +80,11 @@ GENERAL_INPUT_FIELDS = [
     "albumin", "potassium", "sodium", "urea"
 ]
 
-
 def map_general_to_disease(general_features: List[float], disease_type: str) -> List[float]:
     """
     Map general input features to disease-specific features.
     Fills missing features with safe default values.
     """
-    # Build a dict from general features
     feature_dict = {}
     for i, name in enumerate(GENERAL_INPUT_FIELDS):
         if i < len(general_features):
@@ -102,33 +92,32 @@ def map_general_to_disease(general_features: List[float], disease_type: str) -> 
         else:
             feature_dict[name] = 0.0
 
-    # Map to disease-specific features
     if disease_type == "heart_disease":
         return [
             feature_dict.get("age", 50),
             feature_dict.get("gender", 0),
-            0,  # cp (chest pain type - default)
+            0,
             feature_dict.get("blood_pressure", 120),
             feature_dict.get("cholesterol", 200),
-            1 if feature_dict.get("glucose", 100) > 120 else 0,  # fbs
-            0,  # restecg
+            1 if feature_dict.get("glucose", 100) > 120 else 0,
+            0,
             feature_dict.get("heart_rate", 75),
-            0,  # exang
-            0,  # oldpeak
-            1,  # slope
-            0,  # ca
-            2,  # thal
+            0,
+            0,
+            1,
+            0,
+            2,
         ]
 
     elif disease_type == "diabetes":
         return [
-            0,  # pregnancies
+            0,
             feature_dict.get("glucose", 100),
             feature_dict.get("blood_pressure", 70),
-            20,  # skin thickness default
-            80,  # insulin default
+            20,
+            80,
             feature_dict.get("bmi", 25),
-            0.5,  # diabetes pedigree
+            0.5,
             feature_dict.get("age", 50),
         ]
 
@@ -136,22 +125,22 @@ def map_general_to_disease(general_features: List[float], disease_type: str) -> 
         return [
             feature_dict.get("age", 50),
             feature_dict.get("blood_pressure", 80),
-            1.020,  # specific gravity
-            0,  # albumin
-            0,  # sugar
+            1.020,
+            0,
+            0,
             feature_dict.get("glucose", 100),
             feature_dict.get("urea", 30),
             feature_dict.get("creatinine", 1.0),
             feature_dict.get("sodium", 140),
             feature_dict.get("potassium", 4.5),
             feature_dict.get("hemoglobin", 14),
-            44,  # packed cell volume
-            8000,  # wbc
-            5.0,  # rbc
-            1 if feature_dict.get("blood_pressure", 120) > 140 else 0,  # hypertension
+            44,
+            8000,
+            5.0,
+            1 if feature_dict.get("blood_pressure", 120) > 140 else 0,
             feature_dict.get("diabetes_history", 0),
-            1,  # appetite (good)
-            0,  # anemia
+            1,
+            0,
         ]
 
     elif disease_type == "liver_disease":
@@ -159,33 +148,30 @@ def map_general_to_disease(general_features: List[float], disease_type: str) -> 
             feature_dict.get("age", 50),
             feature_dict.get("gender", 0),
             feature_dict.get("bilirubin", 1.0),
-            0.3,  # direct bilirubin
-            200,  # alkaline phosphotase
+            0.3,
+            200,
             feature_dict.get("alt_enzyme", 25),
-            25,  # aspartate aminotransferase
-            6.5,  # total proteins
+            25,
+            6.5,
             feature_dict.get("albumin", 3.5),
-            1.0,  # albumin/globulin ratio
+            1.0,
         ]
 
     elif disease_type == "stroke":
         return [
             feature_dict.get("gender", 0),
             feature_dict.get("age", 50),
-            1 if feature_dict.get("blood_pressure", 120) > 140 else 0,  # hypertension
-            feature_dict.get("diabetes_history", 0),  # heart_disease proxy
-            1,  # ever married
-            0,  # work type
-            1,  # residence type
+            1 if feature_dict.get("blood_pressure", 120) > 140 else 0,
+            feature_dict.get("diabetes_history", 0),
+            1,
+            0,
+            1,
             feature_dict.get("glucose", 100),
             feature_dict.get("bmi", 25),
             feature_dict.get("smoking", 0),
         ]
 
     return general_features
-
-
-# ==================== ENDPOINTS ====================
 
 @router.post("/predict", response_model=dict)
 async def predict_all_diseases(request: PredictRequest):
@@ -203,23 +189,19 @@ async def predict_all_diseases(request: PredictRequest):
             if not model_exists(disease_type):
                 continue
 
-            
             model, scaler = load_model(disease_type)
             if model is None:
                 continue
 
-            
             disease_features = map_general_to_disease(request.features, disease_type)
 
-            
             features_array = np.array(disease_features).reshape(1, -1)
             if scaler is not None:
                 features_array = scaler.transform(features_array)
 
-            # Predict
             prediction = int(model.predict(features_array)[0])
             probabilities = model.predict_proba(features_array)[0].tolist()
-            confidence = float(probabilities[1])  # Probability of disease
+            confidence = float(probabilities[1])
 
             risk_level = get_risk_level(confidence)
             prediction_label = (
@@ -242,16 +224,12 @@ async def predict_all_diseases(request: PredictRequest):
             print(f"Error predicting {disease_type}: {e}")
             continue
 
-    # Sort by confidence (highest risk first)
-      # Sort by confidence (highest risk first)
     predictions.sort(key=lambda x: x["confidence"], reverse=True)
 
-    # Generate AI recommendations
     recommendations = None
     try:
         from app.utils.recommendation_engine import recommendation_engine
 
-        # Build feature dict from input list
         feature_names = [
             "age", "gender", "bloodPressure", "cholesterol",
             "heartRate", "glucose", "bmi", "smoking",
@@ -280,7 +258,6 @@ async def predict_all_diseases(request: PredictRequest):
         "recommendations": recommendations
     }
 
-
 @router.post("/predict/single")
 async def predict_single_disease(disease_type: str, request: PredictSingleRequest):
     """Predict a single specific disease."""
@@ -298,7 +275,6 @@ async def predict_single_disease(disease_type: str, request: PredictSingleReques
 
     model, scaler = load_model(disease_type)
 
-    
     disease_features = map_general_to_disease(request.features, disease_type)
     features_array = np.array(disease_features).reshape(1, -1)
 
@@ -327,7 +303,6 @@ async def get_recommendations_only(request: PredictRequest):
     """
     from app.utils.recommendation_engine import recommendation_engine
 
-    # Map features
     feature_names = [
         "age", "gender", "bloodPressure", "cholesterol",
         "heartRate", "glucose", "bmi", "smoking",
@@ -340,7 +315,6 @@ async def get_recommendations_only(request: PredictRequest):
         if i < len(request.features):
             features_dict[name] = request.features[i]
 
-    # First predict
     predictions = []
     for disease_type in DISEASE_TYPES:
         try:
@@ -389,7 +363,6 @@ class PDFReportRequest(BaseModel):
     recommendations: Optional[Dict] = None
     hospital_data: Optional[Dict] = None
     features: Optional[Dict] = None
-
 
 @router.post("/report/generate")
 async def generate_pdf_report(request: PDFReportRequest):

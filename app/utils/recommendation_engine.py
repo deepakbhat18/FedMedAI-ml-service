@@ -3,7 +3,6 @@ import json
 import requests
 from typing import Dict, List, Optional
 
-
 class RecommendationEngine:
     """
     AI-powered medical recommendation engine.
@@ -14,7 +13,7 @@ class RecommendationEngine:
     def __init__(self):
         self.api_key = os.getenv("OPENROUTER_API_KEY", "")
         self.base_url = "https://openrouter.ai/api/v1/chat/completions"
-        self.model = "meta-llama/llama-3.1-8b-instruct"  # FREE model
+        self.model = "meta-llama/llama-3.1-8b-instruct"
         self.enabled = bool(self.api_key and self.api_key != "your-api-key-here")
 
         if self.enabled:
@@ -39,22 +38,22 @@ class RecommendationEngine:
         Returns:
             Recommendations dictionary
         """
-        # Only recommend for HIGH and MODERATE risk
         relevant = [
             p for p in predictions
             if p.get("risk_level") in ["HIGH", "MODERATE"]
         ]
-
-        if not relevant:
-            return self._healthy_response()
 
         if self.enabled:
             try:
                 return self._call_openrouter(patient_features, predictions)
             except Exception as e:
                 print(f"  ⚠️ OpenRouter failed: {e}. Using fallback.")
+                if not relevant:
+                    return self._healthy_response()
                 return self._rule_based(predictions, patient_features)
         else:
+            if not relevant:
+                return self._healthy_response()
             return self._rule_based(predictions, patient_features)
 
     def _call_openrouter(self, features: Dict, predictions: List[Dict]) -> Dict:
@@ -113,7 +112,6 @@ class RecommendationEngine:
     def _build_prompt(self, features: Dict, predictions: List[Dict]) -> str:
         """Build comprehensive prompt for the AI model."""
 
-        # Format feature values with normal ranges
         feature_analysis = []
 
         bp = features.get("bloodPressure", features.get("blood_pressure", 0))
@@ -181,7 +179,6 @@ class RecommendationEngine:
         feature_analysis.append(f"Age: {age} years")
         feature_analysis.append(f"Gender: {gender_str}")
 
-        # Format predictions
         pred_lines = []
         for pred in sorted(predictions, key=lambda x: x.get("confidence", 0), reverse=True):
             conf = pred.get("confidence", 0) * 100
@@ -245,14 +242,12 @@ RULES:
     def _parse_ai_response(self, content: str, predictions: List[Dict]) -> Dict:
         """Parse AI response and clean up."""
         try:
-            # Remove markdown code blocks if present
             clean = content.strip()
             if "```json" in clean:
                 clean = clean.split("```json")[1].split("```")[0].strip()
             elif "```" in clean:
                 clean = clean.split("```")[1].split("```")[0].strip()
 
-            # Find JSON object
             start = clean.find("{")
             end = clean.rfind("}") + 1
             if start != -1 and end > start:
@@ -405,7 +400,6 @@ RULES:
             rules = RULES.get(disease_key, {})
             confidence = pred.get("confidence", 0) * 100
 
-            # Build feature-specific explanation
             explanation_parts = []
             if disease_key == "diabetes":
                 glucose = features.get("glucose", 0)
@@ -475,7 +469,6 @@ RULES:
                 "medications_note": rules.get("medications_note", "Consult doctor for medication advice")
             })
 
-        # Overall summary
         high_risk_count = len([r for r in recommendations if r["risk_level"] == "HIGH"])
         moderate_risk_count = len([r for r in recommendations if r["risk_level"] == "MODERATE"])
 
@@ -531,6 +524,4 @@ RULES:
             "ai_powered": False
         }
 
-
-# Global instance
 recommendation_engine = RecommendationEngine()

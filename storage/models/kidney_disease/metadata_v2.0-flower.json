@@ -1,0 +1,28 @@
+{
+  "disease_type": "kidney_disease",
+  "version": "v2.0-flower",
+  "model_type": "LogisticRegression",
+  "saved_at": "2026-04-16T16:13:06.340850",
+  "model_path": "/home/deepak/ml-service/storage/models/kidney_disease/model_v2.0-flower.joblib",
+  "scaler_path": "/home/deepak/ml-service/storage/models/kidney_disease/scaler_v2.0-flower.joblib",
+  "metrics": {
+    "accuracy": 0.839,
+    "precision": 0.8534,
+    "recall": 0.8186,
+    "f1_score": 0.8356,
+    "loss": 0.3711,
+    "confusion_matrix": [
+      [
+        379,
+        62
+      ],
+      [
+        80,
+        361
+      ]
+    ],
+    "total_samples": 882,
+    "positive_count": 441,
+    "negative_count": 441
+  }
+}

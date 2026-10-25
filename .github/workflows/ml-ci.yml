@@ -1,0 +1,29 @@
+name: Python ML Service CI/CD Pipeline
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+jobs:
+  build-and-verify:
+    name: Dependency Install, Syntax Check & Docker Image Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+        working-directory: ./
+      - name: Validate Python Syntax & Imports
+        run: python -m py_compile main.py
+        working-directory: ./
+      - name: Build Docker Container Image
+        run: docker build -t fl-medical-ml-service:${{ github.sha }} .
+        working-directory: ./

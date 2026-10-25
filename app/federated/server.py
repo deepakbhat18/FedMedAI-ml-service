@@ -1,5 +1,4 @@
 
-
 import os
 import json
 import numpy as np
@@ -11,7 +10,6 @@ from app.utils.model_store import save_model, load_model
 from app.utils.metrics import calculate_metrics
 from app.data.preprocessor import preprocessor
 from config import DISEASE_TYPES, DISEASE_DISPLAY_NAMES, NUM_HOSPITALS, MODEL_STORAGE_DIR
-
 
 class FederatedServer:
     """Central Federated Learning Server with Before/After tracking."""
@@ -38,7 +36,6 @@ class FederatedServer:
             print(f"🔒 Differential Privacy: ε={dp_epsilon}")
         print(f"{'='*60}")
 
-        # ===== STEP 0: Get BEFORE metrics =====
         before_metrics = self._evaluate_current_models()
         print(f"\n📊 BEFORE Training:")
         for disease, metrics in before_metrics.items():
@@ -47,10 +44,8 @@ class FederatedServer:
             else:
                 print(f"  {disease}: No model yet")
 
-        # Get current global weights
         current_global_weights = self._get_global_weights()
 
-        # ===== STEP 1: Each hospital trains locally =====
         all_hospital_results = []
         successful_hospitals = 0
 
@@ -73,14 +68,12 @@ class FederatedServer:
         if not all_hospital_results:
             return {"success": False, "error": "All hospitals failed", "round": round_number}
 
-        # ===== STEP 2: FedAvg Aggregation =====
         print(f"\n{'='*60}")
         print("CENTRAL SERVER - FEDERATED AVERAGING")
         print(f"{'='*60}")
 
         new_global_weights = federated_averaging_all_diseases(all_hospital_results)
 
-        # ===== STEP 3: Update and save global models =====
         after_metrics = {}
         version = f"v{round_number}.0"
 
@@ -111,7 +104,6 @@ class FederatedServer:
             except Exception as e:
                 print(f"\n  ❌ {disease_type} update failed: {e}")
 
-        # ===== STEP 4: Calculate improvement =====
         comparison = {}
         for disease_type in DISEASE_TYPES:
             before_acc = before_metrics.get(disease_type, {}).get("accuracy", 0) if before_metrics.get(disease_type) else 0
@@ -126,7 +118,6 @@ class FederatedServer:
                 "disease_name": DISEASE_DISPLAY_NAMES.get(disease_type, disease_type)
             }
 
-        # Print comparison
         print(f"\n{'='*60}")
         print("📊 BEFORE vs AFTER COMPARISON")
         print(f"{'='*60}")
@@ -137,7 +128,6 @@ class FederatedServer:
                   f"{comp['before']*100:.1f}% → {comp['after']*100:.1f}% "
                   f"({arrow} {comp['improvement']*100:+.2f}%)")
 
-        # ===== STEP 5: Build response =====
         avg_before = np.mean([c["before"] for c in comparison.values()])
         avg_after = np.mean([c["after"] for c in comparison.values()])
         avg_improvement = avg_after - avg_before
@@ -259,6 +249,4 @@ class FederatedServer:
                 return json.load(f)
         return self.training_history
 
-
-# Global server instance
 fl_server = FederatedServer()

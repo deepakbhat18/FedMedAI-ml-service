@@ -1,0 +1,108 @@
+[
+  {
+    "round": 1,
+    "version": "v1.0",
+    "engine": "custom",
+    "timestamp": "2026-04-17T22:48:52.509368",
+    "participating_hospitals": 3,
+    "total_hospitals": 3,
+    "dp_applied": false,
+    "dp_epsilon": null,
+    "before_metrics": {
+      "heart_disease": {
+        "accuracy": 0.8383,
+        "disease_name": "Heart Disease"
+      },
+      "diabetes": {
+        "accuracy": 0.744,
+        "disease_name": "Diabetes"
+      },
+      "kidney_disease": {
+        "accuracy": 0.8401,
+        "disease_name": "Chronic Kidney Disease"
+      },
+      "liver_disease": {
+        "accuracy": 0.7236,
+        "disease_name": "Liver Disease"
+      },
+      "stroke": {
+        "accuracy": 0.7817,
+        "disease_name": "Stroke"
+      }
+    },
+    "after_metrics": {
+      "heart_disease": {
+        "accuracy": 0.8383,
+        "f1_score": 0.858,
+        "precision": 0.8222,
+        "recall": 0.897
+      },
+      "diabetes": {
+        "accuracy": 0.744,
+        "f1_score": 0.7317,
+        "precision": 0.7687,
+        "recall": 0.698
+      },
+      "kidney_disease": {
+        "accuracy": 0.8401,
+        "f1_score": 0.8385,
+        "precision": 0.8472,
+        "recall": 0.8299
+      },
+      "liver_disease": {
+        "accuracy": 0.7236,
+        "f1_score": 0.6909,
+        "precision": 0.7835,
+        "recall": 0.6178
+      },
+      "stroke": {
+        "accuracy": 0.7817,
+        "f1_score": 0.7891,
+        "precision": 0.7632,
+        "recall": 0.8169
+      }
+    },
+    "comparison": {
+      "heart_disease": {
+        "before": 0.8383,
+        "after": 0.8383,
+        "improvement": 0.0,
+        "improved": false,
+        "disease_name": "Heart Disease"
+      },
+      "diabetes": {
+        "before": 0.744,
+        "after": 0.744,
+        "improvement": 0.0,
+        "improved": false,
+        "disease_name": "Diabetes"
+      },
+      "kidney_disease": {
+        "before": 0.8401,
+        "after": 0.8401,
+        "improvement": 0.0,
+        "improved": false,
+        "disease_name": "Chronic Kidney Disease"
+      },
+      "liver_disease": {
+        "before": 0.7236,
+        "after": 0.7236,
+        "improvement": 0.0,
+        "improved": false,
+        "disease_name": "Liver Disease"
+      },
+      "stroke": {
+        "before": 0.7817,
+        "after": 0.7817,
+        "improvement": 0.0,
+        "improved": false,
+        "disease_name": "Stroke"
+      }
+    },
+    "overall": {
+      "avg_before": 0.7855,
+      "avg_after": 0.7855,
+      "avg_improvement": 0.0
+    }
+  }
+]

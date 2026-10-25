@@ -1,0 +1,28 @@
+{
+  "disease_type": "stroke",
+  "version": "v1.0-flower",
+  "model_type": "LogisticRegression",
+  "saved_at": "2026-04-17T23:56:02.597100",
+  "model_path": "/home/deepak/ml-service/storage/models/stroke/model_v1.0-flower.joblib",
+  "scaler_path": "/home/deepak/ml-service/storage/models/stroke/scaler_v1.0-flower.joblib",
+  "metrics": {
+    "accuracy": 0.7816,
+    "precision": 0.7639,
+    "recall": 0.8153,
+    "f1_score": 0.7887,
+    "loss": 0.4612,
+    "confusion_matrix": [
+      [
+        3636,
+        1225
+      ],
+      [
+        898,
+        3963
+      ]
+    ],
+    "total_samples": 9722,
+    "positive_count": 4861,
+    "negative_count": 4861
+  }
+}

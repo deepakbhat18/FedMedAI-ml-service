@@ -4,7 +4,6 @@ from sklearn.preprocessing import StandardScaler
 from app.utils.metrics import calculate_metrics
 from app.utils.model_store import save_model, load_model, get_model_weights, set_model_weights
 
-
 class BaseDiseaseModel:
     """
     Base class for all disease models.
@@ -47,15 +46,12 @@ class BaseDiseaseModel:
         Returns:
             Dictionary of training metrics
         """
-        # Build model if not exists
         if self.model is None:
             self.build_model()
 
-        # Train
         self.model.fit(X_train, y_train)
         self.is_trained = True
 
-        # Evaluate on test set
         y_pred = self.model.predict(X_test)
         y_prob = self.model.predict_proba(X_test)[:, 1]
 
@@ -114,7 +110,6 @@ class BaseDiseaseModel:
         """
         if self.model is None:
             self.build_model()
-            # Initialize model with dummy data to set classes_
             n_features = len(weights["coefficients"][0])
             dummy_X = np.zeros((2, n_features))
             dummy_y = np.array([0, 1])

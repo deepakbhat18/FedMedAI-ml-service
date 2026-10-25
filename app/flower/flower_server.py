@@ -10,7 +10,6 @@ from app.utils.metrics import calculate_metrics
 from app.utils.model_store import save_model
 from config import DISEASE_TYPES, DISEASE_DISPLAY_NAMES, NUM_HOSPITALS
 
-
 class FlowerFLServer:
     """
     Flower-based Federated Learning Server.
@@ -120,17 +119,14 @@ class FlowerFLServer:
            d. Weighted averaging (FedAvg)
         3. Save final global model
         """
-        # Load and prepare full dataset
         X, y, feature_names = preprocessor.load_disease_data(disease_type)
         X, y = preprocessor.balance_data(X, y, disease_type)
 
         n_features = X.shape[1]
 
-        # Scale full dataset for final evaluation
         scaler_full = StandardScaler()
         X_full_scaled = scaler_full.fit_transform(X)
 
-        # Prepare hospital data splits
         hospital_data = {}
         for hospital_id in hospital_ids:
             np.random.seed(hospital_id * 100 + 42)
@@ -146,11 +142,9 @@ class FlowerFLServer:
             X_h = X[h_indices]
             y_h = y[h_indices]
 
-            # Scale
             scaler = StandardScaler()
             X_h_scaled = scaler.fit_transform(X_h)
 
-            # Split
             if len(X_h_scaled) < 20:
                 X_train, X_test = X_h_scaled, X_h_scaled
                 y_train, y_test = y_h, y_h
@@ -168,7 +162,6 @@ class FlowerFLServer:
                 "n_samples": len(X_train)
             }
 
-        # Initialize global model on FULL dataset first
         init_model = LogisticRegression(max_iter=1000, random_state=42)
         init_model.fit(X_full_scaled, y)
 
@@ -178,7 +171,6 @@ class FlowerFLServer:
 
         round_history = []
 
-        # FLOWER-STYLE FEDERATED LEARNING ROUNDS
         for round_num in range(1, num_rounds + 1):
             print(f"    Round {round_num}/{num_rounds}:")
 
@@ -189,30 +181,24 @@ class FlowerFLServer:
             for hospital_id in hospital_ids:
                 h_data = hospital_data[hospital_id]
 
-                # Create local model with same classes
                 local_model = LogisticRegression(
                     max_iter=1000, random_state=42, warm_start=True
                 )
 
-                # Initialize model properly with all classes
                 local_model.classes_ = classes.copy()
                 local_model.coef_ = global_coef.copy()
                 local_model.intercept_ = global_intercept.copy()
 
-                # Check if hospital data has both classes
                 unique_classes = np.unique(h_data["y_train"])
                 if len(unique_classes) < 2:
                     print(f"      Hospital {hospital_id}: Skipped (only 1 class)")
                     continue
 
-                # LOCAL TRAINING (data stays at hospital!)
                 local_model.fit(h_data["X_train"], h_data["y_train"])
 
-                # Evaluate locally
                 local_accuracy = local_model.score(h_data["X_test"], h_data["y_test"])
                 round_accuracies.append(local_accuracy)
 
-                # Collect weights (NOT data!)
                 local_weights.append({
                     "coef": local_model.coef_.copy(),
                     "intercept": local_model.intercept_.copy()
@@ -223,12 +209,10 @@ class FlowerFLServer:
                       f"Accuracy={local_accuracy:.4f}, "
                       f"Samples={h_data['n_samples']}")
 
-            # Skip aggregation if no hospitals trained
             if not local_weights:
                 print(f"    → Round {round_num}: No hospitals trained, skipping")
                 continue
 
-            # FEDAVG AGGREGATION (Same as Flower's FedAvg)
             total_samples = sum(local_samples)
             new_coef = np.zeros_like(global_coef)
             new_intercept = np.zeros_like(global_intercept)
@@ -254,18 +238,15 @@ class FlowerFLServer:
 
             print(f"    → Round {round_num} avg accuracy: {avg_round_accuracy:.4f}")
 
-        # Create final global model
         final_model = LogisticRegression(max_iter=1000, random_state=42)
         final_model.classes_ = classes
         final_model.coef_ = global_coef
         final_model.intercept_ = global_intercept
 
-        # Evaluate on full dataset
         y_pred = final_model.predict(X_full_scaled)
         y_prob = final_model.predict_proba(X_full_scaled)[:, 1]
         final_metrics = calculate_metrics(y, y_pred, y_prob)
 
-        # Save model
         save_model(
             final_model,
             scaler_full,
@@ -294,6 +275,4 @@ class FlowerFLServer:
     def get_history(self):
         return self.training_history
 
-
-# Global instance
 flower_server = FlowerFLServer()

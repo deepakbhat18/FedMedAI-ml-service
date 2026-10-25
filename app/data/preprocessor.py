@@ -6,14 +6,12 @@ from sklearn.model_selection import train_test_split
 from imblearn.over_sampling import SMOTE
 from config import RAW_DATA_DIR, HOSPITAL_DATA_DIRS, NUM_HOSPITALS
 
-
 class DiseaseDataPreprocessor:
     """Handles loading, cleaning, splitting and balancing data for all diseases."""
 
     def __init__(self):
         self.scalers = {}
 
-    # ==================== HEART DISEASE ====================
     def load_heart_data(self):
         path = os.path.join(RAW_DATA_DIR, "heart.csv")
         df = pd.read_csv(path)
@@ -28,7 +26,6 @@ class DiseaseDataPreprocessor:
 
         return X, y, feature_cols
 
-    # ==================== DIABETES ====================
     def load_diabetes_data(self):
         path = os.path.join(RAW_DATA_DIR, "diabetes.csv")
         df = pd.read_csv(path)
@@ -40,7 +37,6 @@ class DiseaseDataPreprocessor:
         X = df[feature_cols].values.astype(float)
         y = df[target_col].values.astype(int)
 
-        
         zero_replace_cols = [1, 2, 3, 4, 5]
         for col_idx in zero_replace_cols:
             col_mean = X[X[:, col_idx] != 0, col_idx].mean()
@@ -49,7 +45,6 @@ class DiseaseDataPreprocessor:
         X = np.nan_to_num(X, nan=0.0)
         return X, y, feature_cols
 
-    # ==================== KIDNEY DISEASE ====================
     def load_kidney_data(self):
         path = os.path.join(RAW_DATA_DIR, "kidney_disease.csv")
 
@@ -72,7 +67,6 @@ class DiseaseDataPreprocessor:
 
         return X, y, feature_cols
 
-    # ==================== LIVER DISEASE ====================
     def load_liver_data(self):
         path = os.path.join(RAW_DATA_DIR, "indian_liver_patient.csv")
         df = pd.read_csv(path)
@@ -93,7 +87,6 @@ class DiseaseDataPreprocessor:
 
         return X, y, feature_cols
 
-    # ==================== STROKE ====================
     def load_stroke_data(self):
         path = os.path.join(RAW_DATA_DIR, "healthcare-dataset-stroke-data.csv")
         df = pd.read_csv(path)
@@ -128,7 +121,6 @@ class DiseaseDataPreprocessor:
 
         return X, y, feature_cols
 
-    # ==================== GENERAL LOADER ====================
     def load_disease_data(self, disease_type):
         loaders = {
             "heart_disease": self.load_heart_data,
@@ -141,7 +133,6 @@ class DiseaseDataPreprocessor:
             raise ValueError(f"Unknown disease type: {disease_type}")
         return loaders[disease_type]()
 
-    # ==================== BALANCE DATA ====================
     def balance_data(self, X, y, disease_type="unknown"):
         """
         Balance imbalanced dataset using SMOTE.
@@ -183,7 +174,6 @@ class DiseaseDataPreprocessor:
             print(f"  [{disease_type}] Balanced enough (ratio: {ratio:.2f}), no SMOTE needed")
             return X, y
 
-    # ==================== PREPARE FOR TRAINING ====================
     def prepare_training_data(self, disease_type, balance=True):
         """
         Full pipeline: load → balance → scale → split.
@@ -197,16 +187,13 @@ class DiseaseDataPreprocessor:
         """
         print(f"\nPreparing data for: {disease_type}")
 
-        
         X, y, feature_names = self.load_disease_data(disease_type)
         print(f"  Loaded: {X.shape[0]} rows, {X.shape[1]} features")
         print(f"  Disease: {y.sum()}, Healthy: {(y==0).sum()}")
 
-        
         if balance:
             X, y = self.balance_data(X, y, disease_type)
 
-        
         X_train, X_test, y_train, y_test = train_test_split(
             X, y,
             test_size=0.2,
@@ -214,19 +201,16 @@ class DiseaseDataPreprocessor:
             stratify=y
         )
 
-        
         scaler = StandardScaler()
         X_train_scaled = scaler.fit_transform(X_train)
         X_test_scaled = scaler.transform(X_test)
 
-        
         self.scalers[disease_type] = scaler
 
         print(f"  Train: {X_train_scaled.shape[0]}, Test: {X_test_scaled.shape[0]}")
 
         return X_train_scaled, X_test_scaled, y_train, y_test, scaler, feature_names
 
-    # ==================== SPLIT FOR HOSPITALS ====================
     def split_for_hospitals(self, X, y, num_hospitals=NUM_HOSPITALS):
         """
         Split dataset for each hospital.
@@ -249,7 +233,6 @@ class DiseaseDataPreprocessor:
 
         return hospital_data
 
-    # ==================== SCALE FEATURES ====================
     def scale_features(self, X, disease_type):
         """Scale features using cached scaler."""
         if disease_type in self.scalers:
@@ -259,6 +242,4 @@ class DiseaseDataPreprocessor:
             scaler = StandardScaler()
             return scaler.fit_transform(X)
 
-
-# Global instance
 preprocessor = DiseaseDataPreprocessor()

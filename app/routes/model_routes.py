@@ -1,5 +1,4 @@
 
-
 from fastapi import APIRouter, HTTPException
 import numpy as np
 from app.utils.model_store import (
@@ -16,7 +15,6 @@ from config import DISEASE_TYPES, DISEASE_DISPLAY_NAMES
 
 router = APIRouter()
 
-
 @router.get("/model/status")
 async def get_model_status():
     status = get_all_model_status()
@@ -27,7 +25,6 @@ async def get_model_status():
         "models": status
     }
 
-
 @router.get("/model/weights/{disease_type}")
 async def get_weights(disease_type: str):
     if disease_type not in DISEASE_TYPES:
@@ -36,7 +33,6 @@ async def get_weights(disease_type: str):
         raise HTTPException(status_code=404, detail=f"No model for {disease_type}")
     weights = get_model_weights(disease_type)
     return {"disease_type": disease_type, "weights": weights}
-
 
 @router.get("/model/weights")
 async def get_all_weights():
@@ -47,7 +43,6 @@ async def get_all_weights():
             if weights:
                 all_weights[disease_type] = weights
     return {"models_count": len(all_weights), "weights": all_weights}
-
 
 @router.get("/training/history")
 async def get_training_history():
@@ -60,7 +55,6 @@ async def get_training_history():
         "custom_history": custom_history,
         "flower_history": flower_history
     }
-
 
 @router.get("/analytics/full")
 async def get_full_analytics():
@@ -87,7 +81,6 @@ async def get_full_analytics():
             if model is None:
                 continue
 
-            # Evaluate model on full dataset
             X, y, feature_names = preprocessor.load_disease_data(disease_type)
             X, y = preprocessor.balance_data(X, y, disease_type)
 
@@ -114,7 +107,6 @@ async def get_full_analytics():
 
             total_accuracy.append(metrics["accuracy"])
 
-            # Feature importance from model coefficients
             if hasattr(model, 'coef_'):
                 coef = model.coef_[0]
                 importance_data = []
@@ -128,7 +120,6 @@ async def get_full_analytics():
                         "impact": "HIGH" if abs(weight) > 0.5 else "MEDIUM" if abs(weight) > 0.2 else "LOW"
                     })
 
-                # Sort by absolute weight
                 importance_data.sort(key=lambda x: x["abs_weight"], reverse=True)
                 analytics["feature_importance"][disease_type] = {
                     "disease_name": DISEASE_DISPLAY_NAMES.get(disease_type, disease_type),
@@ -139,7 +130,6 @@ async def get_full_analytics():
         except Exception as e:
             print(f"Analytics error for {disease_type}: {e}")
 
-    # Summary
     analytics["summary"] = {
         "total_diseases": len(DISEASE_TYPES),
         "models_available": len(analytics["disease_metrics"]),
@@ -151,7 +141,6 @@ async def get_full_analytics():
                             key=lambda x: x[1]["accuracy"])[0] if analytics["disease_metrics"] else None,
     }
 
-    # Training history
     custom_history = fl_server.get_training_history()
     flower_history = flower_server.get_history()
     analytics["training_rounds"] = {
@@ -162,10 +151,14 @@ async def get_full_analytics():
 
     return analytics
 
-
 @router.get("/health")
 async def health_check():
-    import flwr
+    flower_ver = "unknown"
+    try:
+        import flwr
+        flower_ver = f"v{flwr.__version__}"
+    except Exception:
+        pass
     status = get_all_model_status()
     available = sum(1 for s in status.values() if s["available"])
     return {
@@ -176,6 +169,6 @@ async def health_check():
         "diseases": list(DISEASE_TYPES),
         "engines": {
             "custom_fedavg": "available",
-            "flower": f"available (v{flwr.__version__})"
+            "flower": f"available ({flower_ver})" if flower_ver != "unknown" else "available"
         }
     }

@@ -1,44 +1,51 @@
-# Python
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
-*.pyc
-*.pyo
+*$py.class
+
+# C extensions
 *.so
-*.egg
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
 *.egg-info/
+.installed.cfg
+*.egg
 
-# Virtual Environment
+# Virtual environments
 venv/
-env/
 .venv/
+env/
+ENV/
 
-# Environment secrets
+# Environment Variables
 .env
-
-# ML Models (large files)
-storage/
-storage/models/
-*.joblib
-*.pkl
-*.pickle
-
-# Data files (large)
-data/raw/*.csv
-data/hospital_1/
-data/hospital_2/
-data/hospital_3/
-
-# Training history
-training_history.json
-
-# OS
-.DS_Store
-Thumbs.db
+.env.*
 
 # Logs
 *.log
+logs/
 
-# IDE
+# Machine Learning Models & Data Storage
+storage/*.joblib
+storage/*.pkl
+*.joblib
+*.pkl
+
+# Editors & OS
 .idea/
 .vscode/
-*.swp
+.DS_Store
+Thumbs.db

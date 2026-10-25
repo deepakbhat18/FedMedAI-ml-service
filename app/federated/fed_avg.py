@@ -1,7 +1,6 @@
 import numpy as np
 from typing import List, Dict
 
-
 def federated_averaging(hospital_weights: List[Dict]) -> Dict:
     """
     FedAvg Algorithm - Core of Federated Learning.
@@ -37,18 +36,15 @@ def federated_averaging(hospital_weights: List[Dict]) -> Dict:
 
     print(f"\n  FedAvg aggregating {len(hospital_weights)} hospitals...")
 
-    # Calculate total samples (for weighted averaging)
     total_samples = sum(hw["samples_count"] for hw in hospital_weights)
     print(f"  Total samples across hospitals: {total_samples}")
 
-    # Print each hospital contribution
     for hw in hospital_weights:
         weight_fraction = hw["samples_count"] / total_samples
         print(f"  Hospital {hw['hospital_id']}: "
               f"{hw['samples_count']} samples "
               f"({weight_fraction*100:.1f}% weight)")
 
-    # Extract coefficients and intercepts
     all_coefficients = []
     all_intercepts = []
     sample_weights = []
@@ -61,16 +57,12 @@ def federated_averaging(hospital_weights: List[Dict]) -> Dict:
         all_intercepts.append(np.array(weights["intercept"]))
         sample_weights.append(samples)
 
-    # Convert to numpy arrays
-    all_coefficients = np.array(all_coefficients)  # shape: (n_hospitals, 1, n_features)
-    all_intercepts = np.array(all_intercepts)       # shape: (n_hospitals, 1)
-    sample_weights = np.array(sample_weights)       # shape: (n_hospitals,)
+    all_coefficients = np.array(all_coefficients)
+    all_intercepts = np.array(all_intercepts)
+    sample_weights = np.array(sample_weights)
 
-    # Normalize weights (they should sum to 1)
     normalized_weights = sample_weights / total_samples
 
-    # FEDERATED AVERAGING
-    # Global coefficient = weighted average of all hospital coefficients
     global_coefficients = np.zeros_like(all_coefficients[0])
     global_intercepts = np.zeros_like(all_intercepts[0])
 
@@ -87,7 +79,6 @@ def federated_averaging(hospital_weights: List[Dict]) -> Dict:
     print(f"  Global coefficients shape: {global_coefficients.shape}")
 
     return global_weights
-
 
 def federated_averaging_all_diseases(all_hospital_disease_weights: List[Dict]) -> Dict:
     """
@@ -113,7 +104,6 @@ def federated_averaging_all_diseases(all_hospital_disease_weights: List[Dict]) -
     for disease_type in DISEASE_TYPES:
         print(f"\nAggregating: {disease_type}")
 
-        # Collect weights for this disease from all hospitals
         disease_hospital_weights = []
         for hospital_data in all_hospital_disease_weights:
             if disease_type in hospital_data.get("disease_weights", {}):

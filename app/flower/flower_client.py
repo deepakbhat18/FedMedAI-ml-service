@@ -7,7 +7,6 @@ from app.data.preprocessor import preprocessor
 from app.utils.metrics import calculate_metrics
 from config import DISEASE_TYPES
 
-
 class HospitalFlowerClient(fl.client.NumPyClient):
     """
     Flower client representing ONE hospital.
@@ -28,14 +27,12 @@ class HospitalFlowerClient(fl.client.NumPyClient):
         self.X_test = X_test
         self.y_test = y_test
         
-        # Create and initialize model
         self.model = LogisticRegression(
             max_iter=1000,
             random_state=42,
             solver="lbfgs",
             warm_start=True
         )
-        # Initial fit to set model shape
         self.model.fit(self.X_train, self.y_train)
 
     def get_parameters(self, config):
@@ -63,14 +60,10 @@ class HospitalFlowerClient(fl.client.NumPyClient):
         3. Train on LOCAL data (data stays here!)
         4. Return ONLY updated weights + sample count
         """
-        # Update model with global weights
         self.set_parameters(parameters)
         
-        # Train on LOCAL private data
         self.model.fit(self.X_train, self.y_train)
         
-        # Return updated weights, sample count, and metrics
-        # ONLY weights leave the hospital, NOT data!
         return (
             self.get_parameters(config),
             len(self.X_train),
@@ -87,11 +80,9 @@ class HospitalFlowerClient(fl.client.NumPyClient):
         """
         self.set_parameters(parameters)
         
-        # Predict on local test set
         y_pred = self.model.predict(self.X_test)
         y_prob = self.model.predict_proba(self.X_test)[:, 1]
         
-        # Calculate metrics
         metrics = calculate_metrics(self.y_test, y_pred, y_prob)
         
         loss = metrics.get("loss", 0.0) or 0.0
@@ -109,18 +100,15 @@ class HospitalFlowerClient(fl.client.NumPyClient):
             }
         )
 
-
 def create_flower_client(hospital_id, disease_type):
     """
     Factory function to create a Flower client for a specific hospital.
     
     Loads data, splits for this hospital, and returns client instance.
     """
-    # Load disease data
     X, y, feature_names = preprocessor.load_disease_data(disease_type)
     X, y = preprocessor.balance_data(X, y, disease_type)
     
-    # Split data for this specific hospital
     np.random.seed(hospital_id * 100 + 42)
     indices = np.random.permutation(len(X))
     n = len(indices)
@@ -134,11 +122,9 @@ def create_flower_client(hospital_id, disease_type):
     X_hospital = X[hospital_indices]
     y_hospital = y[hospital_indices]
     
-    # Scale
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X_hospital)
     
-    # Train/test split
     if len(X_scaled) < 20:
         X_train, X_test = X_scaled, X_scaled
         y_train, y_test = y_hospital, y_hospital
